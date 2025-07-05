@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS prices;
 CREATE TABLE prices
 (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -11,5 +12,6 @@ CREATE TABLE prices
     currency_code VARCHAR(3)     NOT NULL
 );
 
+DROP INDEX IF EXISTS idx_prices_product_brand_dates;
 CREATE INDEX idx_prices_product_brand_dates
     ON prices (product_id, brand_id, valid_from, valid_until, priority DESC);
