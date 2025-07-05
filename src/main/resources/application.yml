@@ -6,6 +6,8 @@ spring:
   sql:
     init:
       mode: always
+  webflux:
+    base-path: /api
 logging:
   level:
     org.springframework.r2dbc: DEBUG
