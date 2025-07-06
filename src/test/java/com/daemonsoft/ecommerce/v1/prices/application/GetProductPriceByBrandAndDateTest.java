@@ -5,6 +5,8 @@ import static org.mockito.Mockito.when;
 import com.daemonsoft.ecommerce.v1.prices.domain.Currency;
 import com.daemonsoft.ecommerce.v1.prices.domain.Price;
 import com.daemonsoft.ecommerce.v1.prices.domain.PriceRepository;
+import com.daemonsoft.ecommerce.v1.prices.domain.exception.InvalidPriceRangeException;
+import com.daemonsoft.ecommerce.v1.prices.domain.exception.PriceNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,9 +63,9 @@ class GetProductPriceByBrandAndDateTest {
   }
 
   @Test
-  void shouldReturnEmptyWhenPriceNotFound() {
+  void shouldThrowPriceNotFoundExceptionWhenPriceNotFound() {
     Long brandId = 1L;
-    Long productId = 35455L;
+    Long productId = 35456L;
     LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 10, 0);
 
     when(this.priceRepository.findPrice(brandId, productId, applicationDate))
@@ -72,6 +74,31 @@ class GetProductPriceByBrandAndDateTest {
     Mono<PriceResponseDTO> result =
         this.getProductPriceByBrandAndDate.execute(productId, brandId, applicationDate);
 
-    StepVerifier.create(result).verifyComplete();
+    StepVerifier.create(result)
+        .expectErrorMatches(
+            throwable ->
+                throwable instanceof PriceNotFoundException
+                    && throwable.getMessage().contains("Price not found"))
+        .verify();
+  }
+
+  @Test
+  void shouldThrowInvalidPriceRangeExceptionWhenInvalidRange() {
+    Long brandId = 1L;
+    Long productId = 35455L;
+    LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 14, 10, 0);
+
+    when(this.priceRepository.findPrice(brandId, productId, applicationDate))
+        .thenReturn(Mono.error(new InvalidPriceRangeException("Invalid price date range")));
+
+    Mono<PriceResponseDTO> result =
+        this.getProductPriceByBrandAndDate.execute(productId, brandId, applicationDate);
+
+    StepVerifier.create(result)
+        .expectErrorMatches(
+            throwable ->
+                throwable instanceof InvalidPriceRangeException
+                    && throwable.getMessage().contains("Invalid price date range"))
+        .verify();
   }
 }
