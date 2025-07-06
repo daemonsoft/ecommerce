@@ -73,8 +73,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public Mono<ResponseEntity<ErrorResponse>> handleAllOtherExceptions(Exception ex) {
-    return buildResponse(
-        HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error: " + ex.getCause().getMessage());
+    return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error: " + ex.getMessage());
   }
 
   private Mono<ResponseEntity<ErrorResponse>> buildResponse(HttpStatus status, String message) {
