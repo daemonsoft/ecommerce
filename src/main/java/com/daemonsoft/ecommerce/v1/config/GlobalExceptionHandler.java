@@ -4,11 +4,13 @@ import com.daemonsoft.ecommerce.v1.prices.domain.exception.InvalidPriceRangeExce
 import com.daemonsoft.ecommerce.v1.prices.domain.exception.InvalidPriorityException;
 import com.daemonsoft.ecommerce.v1.prices.domain.exception.NegativePriceException;
 import com.daemonsoft.ecommerce.v1.prices.domain.exception.PriceNotFoundException;
+import java.util.Objects;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
@@ -19,21 +21,6 @@ import reactor.core.publisher.Mono;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleAllExceptions(
-      Exception ex, ServerHttpRequest request) {
-    String traceId = request.getHeaders().getFirst("X-Request-Id");
-    if (traceId == null) {
-      traceId = "no-trace-id";
-    }
-
-    logger.error("Exception caught with traceId {}: {}", traceId, ex.getMessage(), ex);
-
-    ErrorResponse error =
-        ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage(), traceId);
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-  }
 
   @ExceptionHandler(PriceNotFoundException.class)
   public Mono<ResponseEntity<ErrorResponse>> handleNotFound(PriceNotFoundException ex) {
@@ -47,7 +34,7 @@ public class GlobalExceptionHandler {
   })
   public Mono<ResponseEntity<ErrorResponse>> handleInternalErrors(RuntimeException ex) {
     return buildResponse(
-        HttpStatus.INTERNAL_SERVER_ERROR, "Internal data error: " + ex.getMessage());
+        HttpStatus.INTERNAL_SERVER_ERROR, "Internal data error: " + ex.getCause().getMessage());
   }
 
   @ExceptionHandler({
@@ -56,7 +43,38 @@ public class GlobalExceptionHandler {
     ServerWebInputException.class
   })
   public Mono<ResponseEntity<ErrorResponse>> handleBadRequest(Exception ex) {
-    return buildResponse(HttpStatus.BAD_REQUEST, "Invalid request: " + ex.getMessage());
+    String message;
+    String parameterName = "unknown";
+    String value = "unknown";
+
+    if (ex instanceof ServerWebInputException swie) {
+      var messageCause = swie.getReason();
+      var cause = swie.getCause();
+
+      if (cause instanceof TypeMismatchException tme) {
+        if (Objects.nonNull(tme.getPropertyName())) {
+          parameterName = tme.getPropertyName();
+        }
+        if (Objects.nonNull(tme.getValue())) {
+          value = tme.getValue().toString();
+        }
+      }
+
+      message =
+          String.format(
+              "Invalid request: Invalid value '%s' for parameter '%s'. %s",
+              value, parameterName, messageCause);
+    } else {
+      message = "Invalid request: " + ex.getCause();
+    }
+
+    return buildResponse(HttpStatus.BAD_REQUEST, message);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public Mono<ResponseEntity<ErrorResponse>> handleAllOtherExceptions(Exception ex) {
+    return buildResponse(
+        HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error: " + ex.getCause().getMessage());
   }
 
   private Mono<ResponseEntity<ErrorResponse>> buildResponse(HttpStatus status, String message) {
@@ -64,8 +82,12 @@ public class GlobalExceptionHandler {
     return Mono.deferContextual(
         ctx -> {
           String traceId =
-              ctx.getOrDefault(
-                  RequestTraceIdFilter.TRACE_ID_KEY, java.util.UUID.randomUUID().toString());
+              ctx.getOrDefault(RequestTraceIdFilter.TRACE_ID_KEY, UUID.randomUUID().toString());
+          logger.error(
+              "Handling exception - status={} traceId={} message={}",
+              status.value(),
+              traceId,
+              cleanMessage);
           ErrorResponse errorResponse = ErrorResponse.of(status.value(), cleanMessage, traceId);
           return Mono.just(ResponseEntity.status(status).body(errorResponse));
         });
