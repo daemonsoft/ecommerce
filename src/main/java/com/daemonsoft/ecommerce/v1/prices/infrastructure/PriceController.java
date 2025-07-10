@@ -1,6 +1,6 @@
 package com.daemonsoft.ecommerce.v1.prices.infrastructure;
 
-import com.daemonsoft.ecommerce.v1.prices.application.GetProductPriceByBrandAndDate;
+import com.daemonsoft.ecommerce.v1.prices.application.GetHighestPriorityPrice;
 import com.daemonsoft.ecommerce.v1.prices.application.PriceResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,16 +21,16 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/prices")
 public class PriceController {
 
-  private final GetProductPriceByBrandAndDate getProductPriceByBrandAndDate;
+  private final GetHighestPriorityPrice getHighestPriorityPrice;
 
-  public PriceController(GetProductPriceByBrandAndDate getProductPriceByBrandAndDate) {
-    this.getProductPriceByBrandAndDate = getProductPriceByBrandAndDate;
+  public PriceController(GetHighestPriorityPrice getHighestPriorityPrice) {
+    this.getHighestPriorityPrice = getHighestPriorityPrice;
   }
 
   @Operation(
-      summary = "Get product price by brand and date",
+      summary = "Get highest priority product price by brand and date",
       description =
-          "Returns the applicable price for a given product, brand, and application date.")
+          "Returns the highest priority applicable price for a given product, brand, and application date.")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -58,7 +58,7 @@ public class PriceController {
           @DateTimeFormat(pattern = "yyyy-MM-dd-HH:mm:ss")
           LocalDateTime applicationDate) {
 
-    return this.getProductPriceByBrandAndDate
+    return this.getHighestPriorityPrice
         .execute(productId, brandId, applicationDate)
         .map(ResponseEntity::ok)
         .defaultIfEmpty(ResponseEntity.notFound().build());

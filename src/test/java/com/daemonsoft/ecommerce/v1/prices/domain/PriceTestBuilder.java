@@ -8,7 +8,7 @@ public class PriceTestBuilder {
   private Long brandId = 1L;
   private LocalDateTime validFrom = LocalDateTime.of(2023, 1, 1, 0, 0);
   private LocalDateTime validUntil = LocalDateTime.of(2023, 12, 31, 23, 59);
-  private Long rate = 1L;
+  private Long rateId = 1L;
   private Long productId = 35455L;
   private Integer priority = 1;
   private BigDecimal finalPrice = new BigDecimal("10.00");
@@ -34,8 +34,8 @@ public class PriceTestBuilder {
     return this;
   }
 
-  public PriceTestBuilder withRate(Long rate) {
-    this.rate = rate;
+  public PriceTestBuilder withRateId(Long rateId) {
+    this.rateId = rateId;
     return this;
   }
 
@@ -61,6 +61,6 @@ public class PriceTestBuilder {
 
   public Price build() {
     return new Price(
-        id, brandId, validFrom, validUntil, rate, productId, priority, finalPrice, currency);
+        id, brandId, validFrom, validUntil, rateId, productId, priority, finalPrice, currency);
   }
 }

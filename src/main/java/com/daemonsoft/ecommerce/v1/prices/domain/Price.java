@@ -11,7 +11,7 @@ public record Price(
     Long brandId,
     LocalDateTime validFrom,
     LocalDateTime validUntil,
-    Long rate,
+    Long rateId,
     Long productId,
     Integer priority,
     BigDecimal finalPrice,

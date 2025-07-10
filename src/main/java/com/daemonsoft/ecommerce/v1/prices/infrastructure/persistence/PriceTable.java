@@ -6,8 +6,12 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+/**
+ * Database table mapping for the prices table. This class represents the database schema and is
+ * used for persistence operations.
+ */
 @Table("prices")
-public class PriceEntity {
+public class PriceTable {
 
   @Id private Long id;
 
@@ -17,7 +21,7 @@ public class PriceEntity {
 
   private LocalDateTime validUntil;
 
-  private Long rate;
+  private Long rateId;
 
   private Long productId;
 
@@ -27,14 +31,14 @@ public class PriceEntity {
 
   private String currencyCode;
 
-  public PriceEntity() {}
+  public PriceTable() {}
 
-  public PriceEntity(
+  public PriceTable(
       Long id,
       Long brandId,
       LocalDateTime validFrom,
       LocalDateTime validUntil,
-      Long rate,
+      Long rateId,
       Long productId,
       Integer priority,
       BigDecimal finalPrice,
@@ -43,7 +47,7 @@ public class PriceEntity {
     this.brandId = brandId;
     this.validFrom = validFrom;
     this.validUntil = validUntil;
-    this.rate = rate;
+    this.rateId = rateId;
     this.productId = productId;
     this.priority = priority;
     this.finalPrice = finalPrice;
@@ -82,12 +86,12 @@ public class PriceEntity {
     this.validUntil = validUntil;
   }
 
-  public Long getRate() {
-    return rate;
+  public Long getRateId() {
+    return rateId;
   }
 
-  public void setRate(Long rate) {
-    this.rate = rate;
+  public void setRateId(Long rateId) {
+    this.rateId = rateId;
   }
 
   public Long getProductId() {

@@ -18,15 +18,15 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-class GetProductPriceByBrandAndDateTest {
+class GetHighestPriorityPriceTest {
 
   @Mock private PriceRepository priceRepository;
 
-  private GetProductPriceByBrandAndDate getProductPriceByBrandAndDate;
+  private GetHighestPriorityPrice getHighestPriorityPrice;
 
   @BeforeEach
   void setup() {
-    this.getProductPriceByBrandAndDate = new GetProductPriceByBrandAndDate(priceRepository);
+    this.getHighestPriorityPrice = new GetHighestPriorityPrice(priceRepository);
   }
 
   @Test
@@ -51,7 +51,7 @@ class GetProductPriceByBrandAndDateTest {
         .thenReturn(Mono.just(price));
 
     Mono<PriceResponseDTO> result =
-        this.getProductPriceByBrandAndDate.execute(productId, brandId, applicationDate);
+        this.getHighestPriorityPrice.execute(productId, brandId, applicationDate);
 
     StepVerifier.create(result)
         .expectNextMatches(
@@ -72,7 +72,7 @@ class GetProductPriceByBrandAndDateTest {
         .thenReturn(Mono.empty());
 
     Mono<PriceResponseDTO> result =
-        this.getProductPriceByBrandAndDate.execute(productId, brandId, applicationDate);
+        this.getHighestPriorityPrice.execute(productId, brandId, applicationDate);
 
     StepVerifier.create(result)
         .expectErrorMatches(
@@ -92,7 +92,7 @@ class GetProductPriceByBrandAndDateTest {
         .thenReturn(Mono.error(new InvalidPriceRangeException("Invalid price date range")));
 
     Mono<PriceResponseDTO> result =
-        this.getProductPriceByBrandAndDate.execute(productId, brandId, applicationDate);
+        this.getHighestPriorityPrice.execute(productId, brandId, applicationDate);
 
     StepVerifier.create(result)
         .expectErrorMatches(

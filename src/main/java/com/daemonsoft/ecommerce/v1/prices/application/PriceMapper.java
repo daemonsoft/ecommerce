@@ -10,7 +10,7 @@ public class PriceMapper {
     return new PriceResponseDTO(
         price.productId(),
         price.brandId(),
-        price.rate(),
+        price.rateId(),
         price.validFrom(),
         price.validUntil(),
         price.finalPrice());

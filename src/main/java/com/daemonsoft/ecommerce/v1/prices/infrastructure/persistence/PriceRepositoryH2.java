@@ -18,9 +18,7 @@ public class PriceRepositoryH2 implements PriceRepository {
   @Override
   public Mono<Price> findPrice(Long brandId, Long productId, LocalDateTime applicationDate) {
     return this.springDataRepo
-        .findByProductIdAndBrandIdAndValidFromLessThanEqualAndValidUntilGreaterThanEqualOrderByPriorityDesc(
-            productId, brandId, applicationDate, applicationDate)
-        .next()
-        .map(PriceEntityMapper::toDomain);
+        .findHighestPriorityPrice(productId, brandId, applicationDate)
+        .map(PriceTableMapper::toDomain);
   }
 }

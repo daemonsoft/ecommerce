@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public record PriceResponseDTO(
     @Schema(description = "Product ID", example = "35455") Long productId,
     @Schema(description = "Brand ID", example = "1") Long brandId,
-    @Schema(description = "Tariff or rate ID", example = "2") Long rate,
+    @Schema(description = "Tariff or rate ID", example = "2") Long rateId,
     @Schema(description = "Price validity start datetime", example = "2020-06-14-10:00:00")
         LocalDateTime validFrom,
     @Schema(description = "Price validity end datetime", example = "2020-06-14-18:30:00")
